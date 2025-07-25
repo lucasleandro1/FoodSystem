@@ -19,7 +19,7 @@ import { SignUp } from "../pages/SignUp";
 
 const Router: React.FC = () => (
   <Routes>
-    <Route path="/test" element={ <SignUp/> }/>
+    <Route path="/signup" element={ <SignUp/> }/>
     {/* <Route element={<PrivateSigned />}>
       <Route path="/" element={<Landing />} />
       <Route path="/signin" element={<Signin />} />

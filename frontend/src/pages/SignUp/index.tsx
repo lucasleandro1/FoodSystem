@@ -1,41 +1,55 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
 import {
   Container,
   Typography,
   TextField,
   Button,
   Box,
-  Alert
-} from '@mui/material';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+  Alert,
+} from "@mui/material";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import api from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
-const signupSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem',
-  path: ['confirmPassword']
-});
+const signupSchema = z
+  .object({
+    email: z.string().email("Email inválido"),
+    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
 
-type SignupSchema = z.infer < typeof signupSchema >
+type SignupSchema = z.infer<typeof signupSchema>;
 
 export const SignUp = () => {
+  const navigate = useNavigate ()
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitSuccessful },
-    reset
+    reset,
   } = useForm({
-    resolver: zodResolver(signupSchema)
+    resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = useCallback( (data: SignupSchema) => {
-    console.log('Cadastro enviado:', data);
-    reset();
-  },[ reset ]);
+  const onSubmit = useCallback(
+    async (data: SignupSchema) => {
+      console.log("Cadastro enviado:", data);
+      try {
+        await api.post("/users/tokens/sign_up", data );
+        navigate("/")
+      } catch (error) {
+        console.log(error);
+      }
+      reset();
+    },
+    [reset]
+  );
 
   return (
     <Container maxWidth="sm">
@@ -60,7 +74,7 @@ export const SignUp = () => {
               id="email"
               type="email"
               fullWidth
-              {...register('email')}
+              {...register("email")}
               error={!!errors.email}
               helperText={errors.email?.message}
               autoComplete="email"
@@ -81,7 +95,7 @@ export const SignUp = () => {
               id="password"
               type="password"
               fullWidth
-              {...register('password')}
+              {...register("password")}
               error={!!errors.password}
               helperText={errors.password?.message}
               autoComplete="new-password"
@@ -98,7 +112,7 @@ export const SignUp = () => {
               id="confirmPassword"
               type="password"
               fullWidth
-              {...register('confirmPassword')}
+              {...register("confirmPassword")}
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword?.message}
               autoComplete="new-password"
@@ -127,4 +141,4 @@ export const SignUp = () => {
       </Box>
     </Container>
   );
-}
+};
