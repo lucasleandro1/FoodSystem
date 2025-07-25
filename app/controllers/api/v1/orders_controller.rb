@@ -1,50 +1,32 @@
-module Api
-  module V1
-    class OrdersController < ApplicationController
-      before_action :authenticate_devise_api_token!
-      before_action :set_order, only: %i[ show update destroy ]
+class Api::V1::OrdersController < ApplicationController
+  before_action :authenticate_devise_api_token!
 
-      def index
-        @orders = current_devise_api_user.orders.all
-        render json: @orders
-      end
+  def create
+    @order = current_user.orders.build(order_params)
+    @order.restaurant = @restaurant
+    @order.total_price = calculate_total_price(@order)
 
-      def show
-        render json: @order
-      end
-
-      def create
-        @order = Order.new(order_params)
-
-        if @order.save
-          render json: @order, status: :created
-        else
-          render json: @order.errors, status: :unprocessable_entity
-        end
-      end
-
-      def update
-        if @order.update(order_params)
-          render json: @order
-        else
-          render json: @order.errors, status: :unprocessable_entity
-        end
-      end
-
-      def destroy
-        @order.destroy!
-        head :no_content
-      end
-
-      private
-
-      def set_order
-        @order = Order.find(params[:id])
-      end
-
-      def order_params
-        params.require(:order).permit(:user_id, :pickup_address, :delivery_address, :item_description, :requested_at, :estimated_price)
-      end
+    if @order.save
+      render json: @order, status: :created
+    else
+      render json: { errors: @order.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  def index
+    @orders = current_user.orders
+    render json: @orders
+  end
+
+  private
+
+  def order_params
+    params.require(:order).permit(
+      order_products_attributes: [ :product_id, :quantity ]
+    )
+  end
+
+  def calculate_total_price(order)
+    order.order_products.sum { |item| item.product.price * item.quantity }
   end
 end
