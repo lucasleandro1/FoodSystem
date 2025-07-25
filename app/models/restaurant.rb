@@ -1,5 +1,5 @@
 class Restaurant < ApplicationRecord
-  belongs_to :address
+  has_many :addresses, as: :addressable, dependent: :destroy
   has_many :products, dependent: :destroy
   has_many :orders, dependent: :nullify
 
