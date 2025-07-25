@@ -1,0 +1,6 @@
+OrderProduct.destroy_all
+Order.destroy_all
+Product.destroy_all
+Restaurant.destroy_all
+Address.destroy_all
+User.destroy_all

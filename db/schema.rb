@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_25_135736) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_25_192911) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,8 +20,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_135736) do
     t.string "number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
-    t.index ["user_id"], name: "index_addresses_on_user_id"
+    t.string "addressable_type", null: false
+    t.bigint "addressable_id", null: false
+    t.index ["addressable_type", "addressable_id"], name: "index_addresses_on_addressable"
   end
 
   create_table "devise_api_tokens", force: :cascade do |t|
@@ -57,6 +58,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_135736) do
     t.bigint "restaurant_id"
     t.decimal "total_price", precision: 10, scale: 2
     t.integer "payment_method"
+    t.integer "pickup_address_id"
+    t.integer "delivery_address_id"
+    t.text "description"
+    t.datetime "requested_at"
     t.index ["restaurant_id"], name: "index_orders_on_restaurant_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
@@ -73,10 +78,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_135736) do
 
   create_table "restaurants", force: :cascade do |t|
     t.string "name"
-    t.bigint "address_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["address_id"], name: "index_restaurants_on_address_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -91,11 +94,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_135736) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "addresses", "users"
   add_foreign_key "order_products", "orders"
   add_foreign_key "order_products", "products"
   add_foreign_key "orders", "restaurants"
   add_foreign_key "orders", "users"
   add_foreign_key "products", "restaurants"
-  add_foreign_key "restaurants", "addresses"
 end
