@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_24_205953) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_25_135736) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "addresses", force: :cascade do |t|
+    t.string "street"
+    t.string "neighborhood"
+    t.string "number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_addresses_on_user_id"
+  end
 
   create_table "devise_api_tokens", force: :cascade do |t|
     t.string "resource_owner_type", null: false
@@ -30,17 +40,43 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_24_205953) do
     t.index ["resource_owner_type", "resource_owner_id"], name: "index_devise_api_tokens_on_resource_owner"
   end
 
-  create_table "orders", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.string "pickup_address"
-    t.string "delivery_address"
-    t.text "item_description"
-    t.datetime "requested_at"
-    t.decimal "estimated_price", precision: 10, scale: 2
+  create_table "order_products", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "product_id", null: false
+    t.integer "quantity"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["requested_at"], name: "index_orders_on_requested_at"
+    t.index ["order_id"], name: "index_order_products_on_order_id"
+    t.index ["product_id"], name: "index_order_products_on_product_id"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "restaurant_id"
+    t.decimal "total_price", precision: 10, scale: 2
+    t.integer "payment_method"
+    t.index ["restaurant_id"], name: "index_orders_on_restaurant_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "products", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "restaurant_id"
+    t.index ["restaurant_id"], name: "index_products_on_restaurant_id"
+  end
+
+  create_table "restaurants", force: :cascade do |t|
+    t.string "name"
+    t.bigint "address_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["address_id"], name: "index_restaurants_on_address_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -55,5 +91,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_24_205953) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "addresses", "users"
+  add_foreign_key "order_products", "orders"
+  add_foreign_key "order_products", "products"
+  add_foreign_key "orders", "restaurants"
   add_foreign_key "orders", "users"
+  add_foreign_key "products", "restaurants"
+  add_foreign_key "restaurants", "addresses"
 end
